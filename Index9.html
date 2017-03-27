@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    
+    	<style type="text/css">
+	/* DEMO CSS */
+	body{
+		width:100%;
+		margin:0px;
+		padding:0px;
+		font-family: Trebuchet MS, Lucida Sans Unicode, Arial, sans-serif;	/* Font to use */
+        background-color: black;
+        color: white;
+            
+	}
+    
+    a {
+    color: hotpink;
+}
+
+
+	#heading{
+		height:100px;
+	}
+	
+	/* END DEMO CSS */
+	
+	input[type=button] {
+      color:#08233e;
+      font:8em Futura, ‘Century Gothic’, AppleGothic, sans-serif;
+      font-size:150%;
+      padding:14px;
+      background:url(overlay.png) repeat-x center #ffcc00;
+      background-color:rgba(255,204,0,1);
+      border:1px solid #ffcc00;
+      -moz-border-radius:10px;
+      -webkit-border-radius:10px;
+      border-radius:10px;
+      border-bottom:1px solid #9f9f9f;
+      -moz-box-shadow:inset 0 1px 0 rgba(255,255,255,0.5);
+      -webkit-box-shadow:inset 0 1px 0 rgba(255,255,255,0.5);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,0.5);
+      cursor:pointer;
+}
+
+  input[type=button]:hover {
+      background-color:rgba(255,204,0,0.8);
+}
+
+input[type=button]:disabled {
+    color:#000;
+    opacity: 0.65; 
+    cursor: not-allowed;
+}
+
+    
+    #dragScriptContainer{	/* BIG DIV containing HTML needed for the entire script */
+		width:980px;
+		margin:0 auto;
+		border:1px solid #000;
+        
+		height:1000px;
+		margin-top:20px;
+		padding:6px;
+		-moz-user-select:no;
+	}
+    #codeDiv{
+       background-color: red;
+       margin:0 auto;
+       position:fixed;
+      /*bottom:0;
+      left:0;*/
+      top:400px;
+      right:80px;
+      height:200px;
+      width:200px;
+    
+    }
+    #blueSectionDiv{
+       background-color: blue;
+       padding: 10px;
+    
+    }
+    textarea  
+    {  
+       font-size: 25px;   
+    }
+    
+    #questionImage{
+      float:left;
+      border:3px solid #0f0;
+      margin-right: 25px;
+      margin-top: 5px;
+    }
+
+    
+	#question{
+      float:left;
+      border:3px solid #fff;
+      margin-right: 25px;
+      margin-top: 50px;
+    }
+    
+    #prevAnswerDiv{
+      float:left;
+      border:3px solid #fff;
+      margin-right: 25px;
+      margin-top: 50px;
+    }
+    
+    #buttons{
+      position:fixed;
+      /*bottom:0;
+      left:0;*/
+      top:100px;
+      right:50px;
+      height:200px;
+      width:200px;
+    }
+    
+	#questionDiv{	/* Big div for all the questions */
+		float:left;
+		height:800px;
+		width:520px;
+		border:1px solid #000;
+		padding:2px;
+	}
+	#answerDiv{	/* Big div for all the answers */
+		float:right;
+		height:100%;
+		width:425px;
+		border:1px solid #000;
+		padding:2px;	
+        background-color: black;
+	}
+	
+	#questionDiv div,#answerDiv div,#dragContent div{	/* General rules for small divs - i.e. specific questions and answers */
+		width:200px;
+		height:77px;
+		line-height:45px;		
+		float:left;
+		margin-right:2px;
+		margin-bottom:2px;
+		text-align:left;
+	}
+	
+	#dragContent div{	/* Drag content div - i.e. specific answers when they are beeing dragged */
+		border:1px solid #000;
+	}
+	
+	#answerDiv .dragDropSmallBox{	/* Small answer divs */
+		border:1px solid #000;
+		cursor:pointer;
+        color: red;
+        
+	}
+	
+	#questionDiv .dragDropSmallBox{	/* Small answer divs */
+		border:1px solid #000;
+		cursor:pointer;
+		background-color:#E2EBED; /* Light blue background color */
+        color: black;
+        width: 40px;
+        text-align:center;
+	}
+	
+	#questionDiv div div{	/* DIV after it has been dragged from right to left box */
+		margin:0px;
+		border:0px;
+		padding:0px;
+		background-color:#000;
+	}
+	#questionDiv .destinationBox{	/* Small empty boxes for the questions - i.e. where answers could be dragged */
+		border:0px;
+		background-color:#DDD;
+		width:200px;
+		height:80px;
+		
+	
+		
+	}
+	#questionDiv .kAnswer{	/* CSS indicating correct answer */
+		background-color:black;
+		color:#fff;
+		border:1px solid #000;
+	}
+	#questionDiv .kAnswer{	/* CSS indicating wrong answer */
+		background-color:black;
+		color:#fff;
+		border:1px solid #000;
+	}
+
+	#dragContent div{
+		background-color:#FFF;
+	}
+
+	#questionDiv .dragContentOver{	/* Mouse over question boxes - i.e. indicating where dragged element will be appended if mouse button is relased */
+		border:1px solid #F00;
+	}
+	
+	#answerDiv.dragContentOver{	/* Mouse over answer box - i.e. indicating where dragged element will be appended if mouse button is relased */
+		border:1px solid #F00;
+	}
+	
+	/* NEVER CHANGE THIS */
+	#dragContent{
+		position:absolute;
+		display:none;
+	}	
+	
+	</style>
+   <!-- Load the jQuery and jQuery UI libraries. -->
+   <script src="https://code.jquery.com/jquery-1.8.3.min.js"></script>
+   <script src="https://code.jquery.com/ui/1.10.0/jquery-ui.min.js"></script>
+   <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.7.0/moment.min.js" type="text/javascript"></script>
+	<script type="text/javascript">
+
+	/************************************************************************************************************
+	(C) www.dhtmlgoodies.com, November 2005
+	
+	This is a script from www.dhtmlgoodies.com. You will find this and a lot of other scripts at our website.	
+	
+	Terms of use:
+	You are free to use this script as long as the copyright message is kept intact. However, you may not
+	redistribute, sell or repost it without our permission.
+	
+	Thank you!
+	
+	www.dhtmlgoodies.com
+	Alf Magne Kalleland
+	
+	************************************************************************************************************/
+		
+	
+    
+    var shuffleQuestions = false;	/* Shuffle questions ? */
+	var shuffleAnswers = false;	/* Shuffle answers ? */
+	var lockedAfterDrag = false;	/* Lock items after they have been dragged, i.e. the user get's only one shot for the correct answer */
+	
+    //k edits
+    $(function() {
+      //loadprevAnswers(); 
+      dragDropResetForm(); //hidden for now until operational
+    });
+    
+    function loadprevAnswers(student) {
+      var page = 7;
+      google.script.run.withSuccessHandler(showPrevAnswers)
+        .withFailureHandler(showError)
+        .getPrevAnswers(page,student);
+
+}
+
+    function showPrevAnswers(answers) {
+     /* var piecesArray = ["0B7iDABgEdh2TMWRyakVEdjlqSnc","0B7iDABgEdh2TMWRyakVEdjlqSnc","0B7iDABgEdh2TMWRyakVEdjlqSnc","0B7iDABgEdh2TMWRyakVEdjlqSnc","0B7iDABgEdh2TdmxxbWJYemRmUms",
+                         "0B7iDABgEdh2TcVpPVlFlMzNxaWM","0B7iDABgEdh2TQjlDTGV0UHpobUk","0B7iDABgEdh2TbUJ3aDI0emtnVGc","0B7iDABgEdh2TQTBodzM1WVNCcHc","0B7iDABgEdh2TaHdKSUdwTUlaREU",
+                         "0B7iDABgEdh2TTGxsSFE1dWhfNXc","0B7iDABgEdh2TSEZocmVFemN2OHc","0B7iDABgEdh2TbHdRamdDR3ZLb2c","0B7iDABgEdh2TRUQ1Zk9GM0wyekU","0B7iDABgEdh2TdmxxbWJYemRmUms",
+                         "0B7iDABgEdh2TU29BYk1ITzAyZDA","0B7iDABgEdh2TN1dsRG5UbVZPVDg","0B7iDABgEdh2TRzFDQ2pWUEpuSWc","0B7iDABgEdh2TS2tIWGo2UUo4UnM","0B7iDABgEdh2TS2tIWGo2UUo4UnM",
+                         "0B7iDABgEdh2TNm5PT296OU9LT0U","0B7iDABgEdh2TMGRDbUcyWUZRTms","0B7iDABgEdh2TeWxENlUzYjJCMFE","0B7iDABgEdh2TX0JNOFhsdm1ZVzg","0B7iDABgEdh2TQTBodzM1WVNCcHc"];
+                         
+      var list = $('#prevAnswers').empty();*/
+      if (!answers[1]) {
+        hideNextPage();
+        //list.text('No Saved Answer');
+        } else {
+        var codeSpace = $('#codeText').empty();
+         codeSpace.text(answers[1]);
+         showNextPage();
+         }
+        /*function to display pictures
+        for (i=0; i<answers[0].length; i++){
+        var url = "https://www.googledrive.com/host/" + piecesArray[answers[0][i]-1]
+        console.log(url);
+        //for (i=0;i<kdivs.length;i++) {
+        //var url = "https://www.googledrive.com/host/0B7iDABgEdh2TNEtvODM5WWlPWTA";
+        //list.text(answers);
+        var picList = $('<li>');
+        var img = $('<img>')
+           .attr("src", url)
+           .attr("height",75)
+           .attr("width", 180);
+        picList.append(img);   
+        list.append(picList);
+        showNextPage();
+        }
+        }*/
+      
+
+    }
+    /**
+        <div class="dragDropSmallBox" id="a1"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TMWRyakVEdjlqSnc" alt="Smiley face" height="75" width="180">1</div>
+		<div class="dragDropSmallBox" id="a2"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TMWRyakVEdjlqSnc" alt="Smiley face" height="75" width="180">2</div>
+		<div class="dragDropSmallBox" id="a3"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TMWRyakVEdjlqSnc" alt="Smiley face" height="75" width="180">3</div>
+		<div class="dragDropSmallBox" id="a4"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TMWRyakVEdjlqSnc" alt="Smiley face" height="75" width="180">4</div>
+		<div class="dragDropSmallBox" id="a5"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TdmxxbWJYemRmUms" alt="Smiley face" height="75" width="180">5</div>
+		<div class="dragDropSmallBox" id="a6"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TcVpPVlFlMzNxaWM" alt="Smiley face" height="75" width="180">6</div>
+		<div class="dragDropSmallBox" id="a7"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TQjlDTGV0UHpobUk" alt="Smiley face" height="75" width="180">7</div>
+		<div class="dragDropSmallBox" id="a8"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TbUJ3aDI0emtnVGc" alt="Smiley face" height="75" width="180">8</div>
+		<div class="dragDropSmallBox" id="a9"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TQTBodzM1WVNCcHc" alt="Smiley face" height="75" width="180">9</div>
+		<div class="dragDropSmallBox" id="a10"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TaHdKSUdwTUlaREU" alt="Smiley face" height="75" width="180">10</div>
+        <div class="dragDropSmallBox" id="a11"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TTGxsSFE1dWhfNXc" alt="Smiley face" height="75" width="180">11</div>	
+		<div class="dragDropSmallBox" id="a12"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TSEZocmVFemN2OHc" alt="Smiley face" height="75" width="180">12</div>	
+		<div class="dragDropSmallBox" id="a13"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TbHdRamdDR3ZLb2c" alt="Smiley face" height="75" width="180">13</div>	
+		<div class="dragDropSmallBox" id="a14"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TRUQ1Zk9GM0wyekU" alt="Smiley face" height="75" width="180">14</div>	
+		<div class="dragDropSmallBox" id="a15"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TdmxxbWJYemRmUms" alt="Smiley face" height="75" width="180">15</div>	
+		<div class="dragDropSmallBox" id="a16"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TU29BYk1ITzAyZDA" alt="Smiley face" height="75" width="180">16</div>	
+		<div class="dragDropSmallBox" id="a17"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TN1dsRG5UbVZPVDg" alt="Smiley face" height="75" width="180">17</div>	
+		<div class="dragDropSmallBox" id="a18"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TRzFDQ2pWUEpuSWc" alt="Smiley face" height="75" width="180">18</div>	
+		<div class="dragDropSmallBox" id="a19"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TS2tIWGo2UUo4UnM" alt="Smiley face" height="75" width="180">19</div>	
+		<div class="dragDropSmallBox" id="a20"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TS2tIWGo2UUo4UnM" alt="Smiley face" height="75" width="180">20</div>	
+        <div class="dragDropSmallBox" id="a21"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TNm5PT296OU9LT0U" alt="Smiley face" height="75" width="180">21</div>	
+		<div class="dragDropSmallBox" id="a22"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TMGRDbUcyWUZRTms" alt="Smiley face" height="75" width="180">22</div>	
+		<div class="dragDropSmallBox" id="a23"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TeWxENlUzYjJCMFE" alt="Smiley face" height="75" width="180">23</div>	
+		<div class="dragDropSmallBox" id="a24"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TX0JNOFhsdm1ZVzg" alt="Smiley face" height="75" width="180">24</div>	
+		<div class="dragDropSmallBox" id="a25"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TQTBodzM1WVNCcHc" alt="Smiley face" height="75" width="180">25</div>
+    */
+    
+    
+    //k edits end
+    function showError(Err) {
+      console.log("In Error: something went wrong");
+    }
+    
+    
+	function quizIsFinished()
+	{
+		// This function is called when everything is solved		
+		
+	}
+	
+	
+	/* Don't change anything below here */
+	var dragContentDiv = false;
+	var dragContent = false;
+	
+	var dragSource = false;
+	var dragDropTimer = -1;
+	var destinationObjArray = new Array();
+	var destination = false;
+	var dragSourceParent = false;
+	var dragSourceNextSibling = false;
+	var answerDiv;
+	var questionDiv;	
+	var sourceObjectArray = new Array();
+	var arrayOfEmptyBoxes = new Array();
+	var arrayOfAnswers = new Array();
+    var answerArray = [];
+    var kdiv;
+    var textCode;
+	
+	function getTopPos(inputObj)
+	{		
+	  if(!inputObj || !inputObj.offsetTop)return 0;		
+	  var returnValue = inputObj.offsetTop;
+	  while((inputObj = inputObj.offsetParent) != null)returnValue += inputObj.offsetTop;
+	  return returnValue;
+	}
+	
+	function getLeftPos(inputObj)
+	{
+	  if(!inputObj || !inputObj.offsetLeft)return 0;	
+	  var returnValue = inputObj.offsetLeft;
+	  while((inputObj = inputObj.offsetParent) != null)returnValue += inputObj.offsetLeft;
+	  return returnValue;
+	}
+		
+	function cancelEvent()
+	{
+		return false;
+	}
+	
+	function initDragDrop(e)
+	{
+		if(document.all)e = event;
+		if(lockedAfterDrag && this.parentNode.parentNode.id=='questionDiv')return;
+		dragContentDiv.style.left = e.clientX  + Math.max(document.documentElement.scrollLeft,document.body.scrollLeft) + 'px';
+		dragContentDiv.style.top = e.clientY  + Math.max(document.documentElement.scrollTop,document.body.scrollTop) + 'px';
+		dragSource = this;
+		dragSourceParent = this.parentNode;
+		dragSourceNextSibling = false;
+		if(this.nextSibling)dragSourceNextSibling = this.nextSibling;
+		if(!dragSourceNextSibling.tagName)dragSourceNextSibling = dragSourceNextSibling.nextSibling;
+		
+		dragDropTimer=0;
+		timeoutBeforeDrag();
+		
+		return false;
+	}
+	
+	function timeoutBeforeDrag(){
+		if(dragDropTimer>=0 && dragDropTimer<10){
+			dragDropTimer = dragDropTimer +1;
+			setTimeout('timeoutBeforeDrag()',10);
+			return;
+		}
+		if(dragDropTimer>=10){
+			dragContentDiv.style.display='block';
+			dragContentDiv.innerHTML = '';
+			dragContentDiv.appendChild(dragSource);
+		
+			
+		}		
+	}
+	
+	function dragDropMove(e)
+	{
+		if(dragDropTimer<10){
+			return;
+		}
+		
+		if(document.all)e = event;
+		
+		var scrollTop = Math.max(document.documentElement.scrollTop,document.body.scrollTop);
+		var scrollLeft = Math.max(document.documentElement.scrollLeft,document.body.scrollLeft);
+		
+		dragContentDiv.style.left = e.clientX + scrollLeft + 'px';
+		dragContentDiv.style.top = e.clientY + scrollTop + 'px';
+		
+		var dragWidth = dragSource.offsetWidth;
+		var dragHeight = dragSource.offsetHeight;
+		
+
+		var objFound = false;
+		
+		var mouseX = e.clientX + scrollLeft;
+		var mouseY = e.clientY + scrollTop;
+		
+		destination = false;
+		for(var no=0;no<destinationObjArray.length;no++){
+			var left = destinationObjArray[no]['left'];
+			var top = destinationObjArray[no]['top'];
+			var width = destinationObjArray[no]['width'];
+			var height = destinationObjArray[no]['height'];
+			
+			destinationObjArray[no]['obj'].className = 'destinationBox';
+			var subs = destinationObjArray[no]['obj'].getElementsByTagName('DIV');
+			if(!objFound && subs.length==0){
+				if(mouseX < (left/1 + width/1) && (mouseX + dragWidth/1) >left && mouseY < (top/1 + height/1) && (mouseY + dragHeight/1) >top){
+					destinationObjArray[no]['obj'].className='dragContentOver';
+					destination = destinationObjArray[no]['obj'];					
+					objFound = true;
+				}		
+			}	
+		}
+		
+		sourceObjectArray['obj'].className='';
+		
+		if(!objFound){
+			var left = sourceObjectArray['left'];
+			var top = sourceObjectArray['top'];
+			var width = sourceObjectArray['width'];
+			var height = sourceObjectArray['height'];
+						
+			if(mouseX < (left/1 + width/1) && (mouseX + dragWidth/1) >left && mouseY < (top/1 + height/1) && (mouseY + dragHeight/1) >top){
+				destination = sourceObjectArray['obj'];
+				sourceObjectArray['obj'].className='dragContentOver';
+			}
+		}
+		return false;
+	}
+	
+	
+	function dragDropEnd()
+	{
+		if(dragDropTimer<10){
+			dragDropTimer = -1;
+			return;
+		}
+        
+		dragContentDiv.style.display='none';
+		sourceObjectArray['obj'].style.backgroundColor = '#FFF';
+		if(destination){
+			destination.appendChild(dragSource);
+			destination.className='destinationBox';
+			
+			// Check if position is correct, i.e. correct answer to the question
+			
+			if(!destination.id || destination.id!='answerDiv'){
+				var previousEl = dragSource.parentNode.previousSibling;
+				if(!previousEl.tagName)previousEl = previousEl.previousSibling;
+                
+				var numericId = previousEl.id.replace(/[^0-9]/g,'');
+				var numericIdSource = dragSource.id.replace(/[^0-9]/g,'');
+                console.log(numericId," ",numericIdSource);
+                console.log(dragSource.parentNode.previousSibling);
+                console.log(dragSource.id);
+                
+                checkPiece(numericId,numericIdSource);
+                //answerArray.push([numericId,numericIdSource]);
+                //console.log(answerArray);
+                //console.log(numericIdSource);
+				
+				if(numericId==numericIdSource){
+					dragSource.className='kAnswer';
+					checkAllAnswers();	
+				}
+				else
+					dragSource.className='kAnswer';				
+			}
+			
+			if(destination.id && destination.id=='answerDiv'){
+				dragSource.className='dragDropSmallBox';
+			}
+			
+		}else{
+			if(dragSourceNextSibling)
+				dragSourceNextSibling.parentNode.insertBefore(dragSource,dragSourceNextSibling);
+			else
+				dragSourceParent.appendChild(dragSource);
+		}
+		dragDropTimer = -1;
+		dragSourceNextSibling = false;
+		dragSourceParent = false;
+		destination = false;
+        //console.log("Answer Array", answerArray);
+	}
+    
+    function checkPiece(destination, source){
+       //console.log("in checkpiece");
+      
+       if (answerArray.length==0) {
+           answerArray.push([destination,source]);
+       } else {
+        var pieceExists = false;
+        var destinationTaken = false;
+       for(i=0; i<answerArray.length;i++) {
+         if(answerArray[i][1]==source) {
+           answerArray[i]=[destination,source];
+           pieceExists = true;
+         } 
+       }
+       if (!pieceExists) {
+          //answerArray.push([destination,source]);
+          for(i=0; i<answerArray.length;i++) {
+            if(answerArray[i][0]==destination) {
+              answerArray[i]=[destination,source];
+              destinationTaken = true;
+            } 
+          }
+          if(!destinationTaken) {
+         answerArray.push([destination,source]);
+       }
+       }
+       
+    }
+    }
+	
+	function checkAllAnswers()
+	{	
+		for(var no=0;no<arrayOfEmptyBoxes.length;no++){
+			var sub = arrayOfEmptyBoxes[no].getElementsByTagName('DIV');
+			if(sub.length==0)return;
+			
+			if(sub[0].className!='kAnswer'){
+				return;
+			}	
+			
+		}	
+		
+		quizIsFinished();	
+	}
+	
+
+	
+	function resetPositions()
+	{
+		if(dragDropTimer>=10)return;
+		
+		for(var no=0;no<destinationObjArray.length;no++){
+			if(destinationObjArray[no]['obj']){
+				destinationObjArray[no]['left'] = getLeftPos(destinationObjArray[no]['obj'])
+				destinationObjArray[no]['top'] = getTopPos(destinationObjArray[no]['obj'])	
+			}		
+			
+		}
+		sourceObjectArray['left'] = getLeftPos(answerDiv);
+		sourceObjectArray['top'] = getTopPos(answerDiv);		
+	}
+	
+	
+	function initDragDropScript()
+	{
+		dragContentDiv = document.getElementById('dragContent');
+		
+		answerDiv = document.getElementById('answerDiv');
+		answerDiv.onselectstart = cancelEvent;
+		var divs = answerDiv.getElementsByTagName('DIV');
+		var answers = new Array();
+		
+		for(var no=0;no<divs.length;no++){
+			if(divs[no].className=='dragDropSmallBox'){
+				divs[no].onmousedown = initDragDrop;
+				answers[answers.length] = divs[no];
+				arrayOfAnswers[arrayOfAnswers.length] = divs[no];
+			}
+			
+		}	
+		
+		if(shuffleAnswers){
+			for(var no=0;no<(answers.length*10);no++){
+				var randomIndex = Math.floor(Math.random() * answers.length);
+				answerDiv.appendChild(answers[randomIndex]);
+			}		
+		}
+		
+		sourceObjectArray['obj'] = answerDiv;
+		sourceObjectArray['left'] = getLeftPos(answerDiv);
+		sourceObjectArray['top'] = getTopPos(answerDiv);
+		sourceObjectArray['width'] = answerDiv.offsetWidth;
+		sourceObjectArray['height'] = answerDiv.offsetHeight;
+		
+		
+		questionDiv = document.getElementById('questionDiv');
+		
+		questionDiv.onselectstart = cancelEvent;
+		var divs = questionDiv.getElementsByTagName('DIV');
+		//console.log(divs);
+		var questions = new Array();
+		var questionsOpenBoxes = new Array();
+		
+
+		for(var no=0;no<divs.length;no++){
+			if(divs[no].className=='destinationBox'){
+				var index = destinationObjArray.length;
+				destinationObjArray[index] = new Array();
+				destinationObjArray[index]['obj'] = divs[no];
+				destinationObjArray[index]['left'] = getLeftPos(divs[no])
+				destinationObjArray[index]['top'] = getTopPos(divs[no])
+				destinationObjArray[index]['width'] = divs[no].offsetWidth;
+				destinationObjArray[index]['height'] = divs[no].offsetHeight;
+				questionsOpenBoxes[questionsOpenBoxes.length] = divs[no];
+				arrayOfEmptyBoxes[arrayOfEmptyBoxes.length] = divs[no];
+			}
+			if(divs[no].className=='dragDropSmallBox'){
+				questions[questions.length] = divs[no];
+			}
+				
+		}
+		
+		if(shuffleQuestions){
+			for(var no=0;no<(questions.length*10);no++){
+				var randomIndex = Math.floor(Math.random() * questions.length);
+
+				questionDiv.appendChild(questions[randomIndex]);			
+				questionDiv.appendChild(questionsOpenBoxes[randomIndex]);		
+				
+				destinationObjArray[destinationObjArray.length] = destinationObjArray[randomIndex];
+				destinationObjArray.splice(randomIndex,1);	
+				
+				questionsOpenBoxes[questionsOpenBoxes.length] = questionsOpenBoxes[randomIndex];
+				questionsOpenBoxes.splice(randomIndex,1);
+				questions[questions.length] = questions[randomIndex];
+				questions.splice(randomIndex,1);	
+				
+				
+			}		
+		}
+		
+		questionDiv.style.visibility = 'visible';
+		answerDiv.style.visibility = 'visible';
+		
+		document.documentElement.onmouseup = dragDropEnd;	
+		document.documentElement.onmousemove = dragDropMove;	
+		setTimeout('resetPositions()',150);
+		window.onresize = resetPositions;
+        kdivs = divs;
+	}
+
+	/* Reset the form */
+	function dragDropResetForm()
+	{
+		answerArray=[];
+        for(var no=0;no<arrayOfAnswers.length;no++){
+			arrayOfAnswers[no].className='dragDropSmallBox'
+			answerDiv.appendChild(arrayOfAnswers[no]);			
+		}
+        initDragDropScript();
+	}
+	
+	window.onload = initDragDropScript;
+	
+    function submitArray() {
+       run();
+       var page = 7;
+       //var sortedArray = answerArray.sort(sortFunction);
+       //console.log(sortedArray);
+       //var answer = [];
+       //console.log(kdivs);
+       //for (i=0;i<kdivs.length;i++) {
+        // if (kdivs[i].className=="kAnswer") {
+       //    var strippedAnswer = kdivs[i].id.replace(/[^0-9]/g,'');
+       //    answer.push(strippedAnswer);
+      //   }
+     //  }
+       //console.log("answer: " + answer[0]);
+       if ( !textCode) {
+       hideNextPage();
+       alert("Your answer has not been saved. You must write something.");
+         
+       } else {
+      var answer = [1,1];
+       google.script.run.sendAnswer(answer, page, textCode);
+       alert("Your answers have been saved.");
+       showNextPage();
+       loadprevAnswers();
+       }
+       //google.script.run.sendOrderAnswer(answer);
+    }
+    
+   
+
+    function sortFunction(a, b) {
+       if (a[0] === b[0]) {
+          return 0;
+       }
+       else {
+          return (a[0] < b[0]) ? -1 : 1;
+       }
+    }
+    
+    function showNextPage() {
+        //document.getElementById('nextPageButton').style.display = "block";
+        document.getElementById('prevPageButton').disabled = false;
+    }
+    
+    function hideNextPage() {
+        //document.getElementById('nextPageButton').style.display = "block";
+        document.getElementById('prevPageButton').disabled = true;
+    }
+    
+    function run(){
+       var code = document.getElementById('codeText');
+       //alert(code.value);
+       textCode = code.value;
+       //window.location.href = "http://www.w3fools.com";
+       //return false;
+       }
+       //run()
+	</script>
+	
+
+  </head>
+  <body>
+  <center><select id="students" style='display:none'>
+      <option>Loading...</option>
+  </select></center>
+    <H1 align="center">Logo Programming Spring Assessment Page 7</H1>
+    <font color="lightgreen"><H2>Question 7:<br>
+   In question 5 Koby uses an IF statement to create his code. <br> What is an 'IF' statement, and what does it allow the turtle to do?
+    <br>
+    </H2></font>
+
+       
+    <div id="blueSectionDiv">
+    <!--div id="question"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TUU82cF9HWG5ZbjA"></div>
+    
+    <div id="prevAnswerDiv">
+      <label for="preAnswers"><h2>Your Saved Answer</h2></label>
+      <ol id="prevAnswers">
+          Loading...
+      </ol>
+    </div>
+    <div id="dragScriptContainer">
+	<div id="questionDiv">
+    <H2>Move the pieces and place them below</H2>
+		<div class="dragDropSmallBox" id="q1">1</div>
+		<div class="destinationBox"></div>
+		<div class="dragDropSmallBox" id="q2">2</div>
+		<div class="destinationBox"></div>
+		<div class="dragDropSmallBox" id="q3">3</div>
+		<div class="destinationBox"></div>
+		<div class="dragDropSmallBox" id="q4">4</div>
+		<div class="destinationBox"></div>
+		<div class="dragDropSmallBox" id="q5">5</div>
+		<div class="destinationBox"></div>
+		<div class="dragDropSmallBox" id="q6">6</div>
+		<div class="destinationBox"></div>
+		<div class="dragDropSmallBox" id="q7">7</div>
+		<div class="destinationBox"></div>
+		<div class="dragDropSmallBox" id="q8">8</div>
+		<div class="destinationBox"></div>
+		<div class="dragDropSmallBox" id="q9">9</div>
+		<div class="destinationBox"></div>
+		<div class="dragDropSmallBox" id="q10">10</div>
+		<div class="destinationBox"></div>
+        <div class="dragDropSmallBox" id="q11">11</div>
+		<div class="destinationBox"></div>
+		<div class="dragDropSmallBox" id="q12">12</div>
+		<div class="destinationBox"></div>
+		<br>
+        <font color="red"><h2>Please fill all empty boxes with a blank piece.</h2></font>
+        <img src="https://www.googledrive.com/host/0B7iDABgEdh2TMWRyakVEdjlqSnc" alt="Smiley face" height="75" width="180" border="2">
+	</div>
+    
+	
+	
+	<div id="answerDiv">
+    <H2>Instruction Pieces</H2><!--these things will be in an array>
+		<div class="dragDropSmallBox" id="a1"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TMWRyakVEdjlqSnc" alt="Smiley face" height="75" width="180">1</div>
+		<div class="dragDropSmallBox" id="a2"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TMWRyakVEdjlqSnc" alt="Smiley face" height="75" width="180">2</div>
+		<div class="dragDropSmallBox" id="a3"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TMWRyakVEdjlqSnc" alt="Smiley face" height="75" width="180">3</div>
+		<div class="dragDropSmallBox" id="a4"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TMWRyakVEdjlqSnc" alt="Smiley face" height="75" width="180">4</div>
+		<div class="dragDropSmallBox" id="a5"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TdmxxbWJYemRmUms" alt="Smiley face" height="75" width="180">5</div>
+		<div class="dragDropSmallBox" id="a6"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TcVpPVlFlMzNxaWM" alt="Smiley face" height="75" width="180">6</div>
+		<!--div class="dragDropSmallBox" id="a7"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TQjlDTGV0UHpobUk" alt="Smiley face" height="75" width="180">7</div>
+		<div class="dragDropSmallBox" id="a8"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TbUJ3aDI0emtnVGc" alt="Smiley face" height="75" width="180">8</div>
+		<div class="dragDropSmallBox" id="a9"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TQTBodzM1WVNCcHc" alt="Smiley face" height="75" width="180">9</div>
+		<div class="dragDropSmallBox" id="a10"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TaHdKSUdwTUlaREU" alt="Smiley face" height="75" width="180">10</div>
+        <div class="dragDropSmallBox" id="a11"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TTGxsSFE1dWhfNXc" alt="Smiley face" height="75" width="180">11</div>	
+		<div class="dragDropSmallBox" id="a12"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TSEZocmVFemN2OHc" alt="Smiley face" height="75" width="180">12</div>	
+		<div class="dragDropSmallBox" id="a13"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TbHdRamdDR3ZLb2c" alt="Smiley face" height="75" width="180">13</div>	
+		<div class="dragDropSmallBox" id="a14"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TRUQ1Zk9GM0wyekU" alt="Smiley face" height="75" width="180">14</div>	
+		<div class="dragDropSmallBox" id="a15"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TdmxxbWJYemRmUms" alt="Smiley face" height="75" width="180">15</div>	
+		<div class="dragDropSmallBox" id="a16"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TU29BYk1ITzAyZDA" alt="Smiley face" height="75" width="180">16</div>	
+		<div class="dragDropSmallBox" id="a17"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TN1dsRG5UbVZPVDg" alt="Smiley face" height="75" width="180">17</div>	
+		<div class="dragDropSmallBox" id="a18"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TRzFDQ2pWUEpuSWc" alt="Smiley face" height="75" width="180">18</div>	
+		<!--div class="dragDropSmallBox" id="a19"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TS2tIWGo2UUo4UnM" alt="Smiley face" height="75" width="180">19</div>	
+		<!--div class="dragDropSmallBox" id="a20"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TS2tIWGo2UUo4UnM" alt="Smiley face" height="75" width="180">20</div>	
+        <div class="dragDropSmallBox" id="a21"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TNm5PT296OU9LT0U" alt="Smiley face" height="75" width="180">21</div>	
+		<div class="dragDropSmallBox" id="a22"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TMGRDbUcyWUZRTms" alt="Smiley face" height="75" width="180">22</div>	
+		<div class="dragDropSmallBox" id="a23"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TeWxENlUzYjJCMFE" alt="Smiley face" height="75" width="180">23</div>	
+		<div class="dragDropSmallBox" id="a24"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TX0JNOFhsdm1ZVzg" alt="Smiley face" height="75" width="180">24</div>	
+		<div class="dragDropSmallBox" id="a25"><img src="https://www.googledrive.com/host/0B7iDABgEdh2TQTBodzM1WVNCcHc" alt="Smiley face" height="75" width="180">25</div>	
+	</div>
+    <!-- text area for writing code  style="display:none;-->
+    
+    <textarea id="codeText" rows="20" cols="50" placeholder="PLEASE WRITE YOUR ANSWER HERE."></textarea>
+    <!--input type="button" onclick="run();return false" value="save code"-->
+   
+</div>
+</div>
+<!--iframe src="https://docs.google.com/a/kaa.org.uk/forms/d/1fyUerhCSQnGYcwFbCni9igZ24CUXJFjz-Ro1bcgZyPA/viewform?embedded=true" width="760" height="500" frameborder="0" marginheight="0" marginwidth="0">Loading...</iframe-->
+<div id="dragContent"></div>
+<div align="center" id="buttons">
+<!--input type="button" onclick="dragDropResetForm();return false" value="Reset/Start Again"-->
+<input type="button" onclick="submitArray();return false" value="Save Answers">
+<!--h1>Source = my1.html</h1-->
+    <?var url = getScriptUrl();?><a href='<?=url?>?page=Index8'> <input id="prevPageButton"type='button' name='button' value='Go Back To Page 6'></a>
+     
+    <!--/div-->
+    <?!= HtmlService.createHtmlOutputFromFile('Javascript').getContent(); ?>
+  </body>
+</html>
+
+

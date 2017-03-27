@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+  </head>
+  <body bgcolor="#FFCC00">
+  <!--body background="http://www.gifszone.com/content/background/texture_orange/texture_orange_1014.gif"-->
+  <center><img src="http://www.vetqi.eu/bildes/images/progress.png" alt="Progress" style="width:200px;height:100px;"></center>
+  <center><select id="students" style='display:none'>
+      <option>Loading...</option>
+  </select></center>
+    <font size = "4">
+    <strong>
+    <H1 align="center" for="info">My Computer Science Progress</H1>
+    <p align="center" id="target"></p>
+    <p> From the evidence in my Computer Science Workbook: </p>
+    <ol id="info">
+       <!--p>Loading change...<p-->
+    </ol>
+    </strong>
+    </font>
+    <center><img src="http://www.progresscards.com/new-progress-cards-logo.jpg" alt="Progress" style="width:150px;height:222px;"></center>
+    <!--FORM NAME="myform" ACTION="" METHOD="GET">Comment Box: <BR>
+       <!--INPUT TYPE="text" NAME="inputbox" VALUE=""><P-->
+       <!--textarea name="message" rows="5" cols="80"></textarea>
+       <INPUT TYPE="button" NAME="button" Value="Click" onClick="testResults(this.form)"><p>
+    </FORM-->
+<?!= HtmlService.createHtmlOutputFromFile('Javascript').getContent(); ?>
+  </body>
+</html>
+
+
